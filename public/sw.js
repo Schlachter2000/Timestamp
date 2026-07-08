@@ -1,7 +1,7 @@
 // Timestamp Service Worker
 // Strategie: API nie cachen (Datenbank ist Quelle der Wahrheit), Navigationen
 // network-first mit Offline-Fallback, statische gehashte Assets cache-first.
-const VERSION = "v1";
+const VERSION = "v2";
 const CACHE = `timestamp-${VERSION}`;
 const OFFLINE_URL = "/offline.html";
 const PRECACHE = [
@@ -23,6 +23,38 @@ self.addEventListener("activate", (event) => {
       .keys()
       .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
+  );
+});
+
+// --- Web Push (Phase 4) ---------------------------------------------------
+
+self.addEventListener("push", (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    // Payload nicht lesbar – Standardtext zeigen
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title || "Timestamp", {
+      body: data.body || "Was machst du gerade?",
+      tag: "timestamp-slot", // neue Erinnerung ersetzt die alte
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      data: { url: "/" },
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((windows) => {
+      for (const client of windows) {
+        if ("focus" in client) return client.focus();
+      }
+      return self.clients.openWindow(event.notification.data?.url || "/");
+    })
   );
 });
 

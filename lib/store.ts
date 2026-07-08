@@ -12,10 +12,25 @@ import { SLOTS_PER_DAY } from "./slots";
 
 export type AuthStatus = "loading" | "anon" | "authed";
 
+export interface PushSettings {
+  pushEnabled: boolean;
+  pushWindowStart: number; // Minuten seit Mitternacht, lokale Zeit
+  pushWindowEnd: number;
+  timezone: string;
+}
+
 export interface SyncState extends StoreState {
   auth: AuthStatus;
   email: string | null;
+  settings: PushSettings;
 }
+
+const DEFAULT_SETTINGS: PushSettings = {
+  pushEnabled: false,
+  pushWindowStart: 480,
+  pushWindowEnd: 1320,
+  timezone: "Europe/Berlin",
+};
 
 /** Gedeckte Werkbank-Farben für den Kategorie-Editor. */
 export const CATEGORY_PALETTE = [
@@ -23,7 +38,13 @@ export const CATEGORY_PALETTE = [
   "#7A55C2", "#B08427", "#5C6470",
 ];
 
-const EMPTY_STATE: SyncState = { auth: "loading", email: null, categories: [], entries: {} };
+const EMPTY_STATE: SyncState = {
+  auth: "loading",
+  email: null,
+  categories: [],
+  entries: {},
+  settings: DEFAULT_SETTINGS,
+};
 
 let state: SyncState = EMPTY_STATE;
 const listeners = new Set<() => void>();
@@ -75,12 +96,23 @@ export async function refetchAll(): Promise<void> {
       return;
     }
     if (!res.ok) return; // transienter Fehler: alten Stand behalten
-    const data: { email: string; categories: Category[]; entries: ApiEntry[] } = await res.json();
+    const data: {
+      email: string;
+      categories: Category[];
+      entries: ApiEntry[];
+      settings?: PushSettings;
+    } = await res.json();
     const entries: Record<string, DayEntries> = {};
     for (const e of data.entries) {
       (entries[e.day] ??= {})[e.slot] = e;
     }
-    setState({ auth: "authed", email: data.email, categories: data.categories, entries });
+    setState({
+      auth: "authed",
+      email: data.email,
+      categories: data.categories,
+      entries,
+      settings: data.settings ?? DEFAULT_SETTINGS,
+    });
     void migrateLegacyLocalData();
   } catch {
     // offline o. ä. – alten Stand behalten
@@ -117,6 +149,15 @@ async function apiWrite(input: RequestInfo, init?: RequestInit): Promise<boolean
     reconcile();
     return false;
   }
+}
+
+export function updateSettings(patch: Partial<PushSettings>): void {
+  setState({ settings: { ...state.settings, ...patch } });
+  void apiWrite("/api/settings", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(patch),
+  });
 }
 
 export async function logout(): Promise<void> {

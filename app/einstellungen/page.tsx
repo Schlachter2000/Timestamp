@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { CATEGORY_PALETTE, addCategory, logout, updateCategory, useStore } from "@/lib/store";
 import { InstallSection } from "@/components/InstallSection";
+import { PushSection } from "@/components/PushSection";
 import type { Category } from "@/lib/types";
 
 type Theme = "system" | "light" | "dark";
@@ -182,10 +183,7 @@ export default function EinstellungenPage() {
 
       <AccountSection />
       <InstallSection />
-      <section className="settings-section placeholder">
-        <h2>Push-Benachrichtigungen</h2>
-        <p className="hint">Kommt in Phase 4: Erinnerung alle 15 Minuten, mit Zeitfenster (z. B. 8–22 Uhr).</p>
-      </section>
+      <PushSection />
       <section className="settings-section placeholder">
         <h2>Google Sheets Export</h2>
         <p className="hint">Kommt in Phase 5: wählbaren Zeitraum in ein Sheet exportieren.</p>

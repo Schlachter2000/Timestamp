@@ -42,7 +42,7 @@ npm run build && npm start
 - [x] **Phase 1** – Grundgerüst, DB-Schema, Tracking-UI (Daten lokal im Browser)
 - [x] **Phase 2** – Auth (E-Mail + Passwort) + Cross-Device-Sync über Neon-Postgres
 - [x] **Phase 3** – PWA (Manifest, Service Worker, Installierbarkeit, iOS-Anleitung)
-- [ ] **Phase 4** – Push-Benachrichtigungen (VAPID, Vercel Cron, Zeitfenster)
+- [x] **Phase 4** – Push-Benachrichtigungen (VAPID, 15-Minuten-Scheduler, Zeitfenster)
 - [ ] **Phase 5** – Google Sheets Export (OAuth2)
 - [ ] **Phase 6** – Claude-Analyse (Anthropic API, Key serverseitig)
 
@@ -56,5 +56,16 @@ npm run build && npm start
 - **Auth:** scrypt-Passwort-Hash (node:crypto), zustandslose HMAC-signierte
   Session im httpOnly-Cookie. Die Registrierung ist offen, bis das erste
   Konto existiert, danach geschlossen (Single-User-App).
-- **Umgebungsvariablen:** `DATABASE_URL` (Neon, pooled) und `AUTH_SECRET` –
-  lokal in `.env.local`, in Vercel unter *Settings → Environment Variables*.
+- **Umgebungsvariablen** (lokal in `.env.local`, in Vercel unter *Settings →
+  Environment Variables*, Namen siehe `.env.example`): `DATABASE_URL`,
+  `AUTH_SECRET`, `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`,
+  `VAPID_SUBJECT`, `CRON_SECRET`.
+- **Push-Scheduler:** `GET /api/cron/push` (geschützt durch `CRON_SECRET` als
+  `Authorization: Bearer …` oder `?key=…`) schickt an alle Konten mit aktivem
+  Push, deren lokales Zeitfenster offen ist. Alle 15 Minuten aufrufen:
+  auf Vercel **Pro** per Vercel Cron (`vercel.json`:
+  `{"crons":[{"path":"/api/cron/push","schedule":"*/15 * * * *"}]}` – Vercel
+  sendet den `CRON_SECRET`-Header automatisch), auf dem **Hobby-Plan** (Cron
+  dort max. 1×/Tag) per externem Dienst wie cron-job.org.
+- **iOS:** Web Push erst ab iOS 16.4 und nur in der über „Zum Home-Bildschirm“
+  installierten App – die Einstellungen zeigen die passende Anleitung an.
