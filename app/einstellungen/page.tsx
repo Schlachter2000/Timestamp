@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CATEGORY_PALETTE, addCategory, updateCategory, useStore } from "@/lib/store";
+import { CATEGORY_PALETTE, addCategory, logout, updateCategory, useStore } from "@/lib/store";
 import type { Category } from "@/lib/types";
 
 type Theme = "system" | "light" | "dark";
@@ -151,6 +151,22 @@ function CategoriesSection() {
   );
 }
 
+function AccountSection() {
+  const store = useStore();
+  return (
+    <section className="settings-section">
+      <h2>Konto &amp; Sync</h2>
+      <p className="hint">
+        Angemeldet als <strong>{store.email}</strong>. Einträge und Kategorien werden auf allen
+        Geräten synchronisiert.
+      </p>
+      <button className="btn ghost" onClick={() => void logout()}>
+        Abmelden
+      </button>
+    </section>
+  );
+}
+
 export default function EinstellungenPage() {
   return (
     <>
@@ -163,10 +179,7 @@ export default function EinstellungenPage() {
       <ThemeSection />
       <CategoriesSection />
 
-      <section className="settings-section placeholder">
-        <h2>Konto &amp; Sync</h2>
-        <p className="hint">Kommt in Phase 2: Login per E-Mail, Daten auf allen Geräten synchron.</p>
-      </section>
+      <AccountSection />
       <section className="settings-section placeholder">
         <h2>Push-Benachrichtigungen</h2>
         <p className="hint">Kommt in Phase 4: Erinnerung alle 15 Minuten, mit Zeitfenster (z. B. 8–22 Uhr).</p>

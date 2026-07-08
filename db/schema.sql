@@ -16,12 +16,14 @@
 create extension if not exists pgcrypto; -- für gen_random_uuid()
 
 -- -----------------------------------------------------------------------------
--- Nutzer (Phase 2: Magic-Link-Auth; ein Konto genügt, Schema erlaubt mehrere)
+-- Nutzer (Phase 2: Login mit E-Mail + Passwort; ein Konto genügt,
+-- die Registrierung ist geschlossen, sobald ein Nutzer existiert)
 -- -----------------------------------------------------------------------------
 create table if not exists users (
-  id         uuid primary key default gen_random_uuid(),
-  email      text not null unique,
-  created_at timestamptz not null default now()
+  id            uuid primary key default gen_random_uuid(),
+  email         text not null unique,
+  password_hash text not null,
+  created_at    timestamptz not null default now()
 );
 
 -- -----------------------------------------------------------------------------

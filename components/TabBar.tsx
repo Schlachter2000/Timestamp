@@ -47,6 +47,7 @@ const TABS = [
 
 export function TabBar() {
   const pathname = usePathname();
+  if (pathname === "/login") return null;
   return (
     <nav className="tabbar" aria-label="Hauptnavigation">
       {TABS.map((tab) => (

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { TabBar } from "@/components/TabBar";
+import { AuthGate } from "@/components/AuthGate";
 import "./globals.css";
 
 const archivo = localFont({
@@ -45,7 +46,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <TabBar />
-        <main className="app-main">{children}</main>
+        <main className="app-main">
+          <AuthGate>{children}</AuthGate>
+        </main>
       </body>
     </html>
   );

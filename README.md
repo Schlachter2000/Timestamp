@@ -14,10 +14,14 @@ Verlauf und Auswertung ansehen, alle 15 Minuten per Push erinnert werden.
 
 ```bash
 npm install
+cp .env.example .env.local   # DATABASE_URL (Neon) und AUTH_SECRET eintragen
+npm run db:schema            # Schema in die Datenbank einspielen (einmalig)
 npm run dev
 ```
 
-Dann <http://localhost:3000> öffnen. Produktions-Build prüfen:
+Dann <http://localhost:3000> öffnen. Beim ersten Start legt man auf der
+Login-Seite das (einzige) Konto an; danach ist die Registrierung geschlossen.
+Produktions-Build prüfen:
 
 ```bash
 npm run build && npm start
@@ -36,12 +40,21 @@ npm run build && npm start
 ## Phasenstand
 
 - [x] **Phase 1** – Grundgerüst, DB-Schema, Tracking-UI (Daten lokal im Browser)
-- [ ] **Phase 2** – Auth + Cross-Device-Sync über Postgres
+- [x] **Phase 2** – Auth (E-Mail + Passwort) + Cross-Device-Sync über Neon-Postgres
 - [ ] **Phase 3** – PWA (Manifest, Service Worker, Installierbarkeit)
 - [ ] **Phase 4** – Push-Benachrichtigungen (VAPID, Vercel Cron, Zeitfenster)
 - [ ] **Phase 5** – Google Sheets Export (OAuth2)
 - [ ] **Phase 6** – Claude-Analyse (Anthropic API, Key serverseitig)
 
-**Hinweis Phase 1:** Einträge und Kategorien liegen vorerst in `localStorage`
-(`lib/store.ts`). Die Funktionssignaturen entsprechen bereits den späteren
-API-Routen; Phase 2 tauscht nur die Implementierung gegen Server-Sync aus.
+## Architektur-Notizen
+
+- **Datenfluss:** Der Server ist die Quelle der Wahrheit. `lib/store.ts` hält
+  eine reaktive Kopie, wendet Mutationen optimistisch an und schreibt sie an
+  die API-Routes; Refetch bei Fokus/Sichtbarkeit und alle 60 s hält mehrere
+  Geräte synchron. Ein evtl. vorhandener Phase-1-Stand aus `localStorage`
+  wird beim ersten Login einmalig importiert.
+- **Auth:** scrypt-Passwort-Hash (node:crypto), zustandslose HMAC-signierte
+  Session im httpOnly-Cookie. Die Registrierung ist offen, bis das erste
+  Konto existiert, danach geschlossen (Single-User-App).
+- **Umgebungsvariablen:** `DATABASE_URL` (Neon, pooled) und `AUTH_SECRET` –
+  lokal in `.env.local`, in Vercel unter *Settings → Environment Variables*.
