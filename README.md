@@ -41,7 +41,7 @@ npm run build && npm start
 
 - [x] **Phase 1** – Grundgerüst, DB-Schema, Tracking-UI (Daten lokal im Browser)
 - [x] **Phase 2** – Auth (E-Mail + Passwort) + Cross-Device-Sync über Neon-Postgres
-- [ ] **Phase 3** – PWA (Manifest, Service Worker, Installierbarkeit)
+- [x] **Phase 3** – PWA (Manifest, Service Worker, Installierbarkeit, iOS-Anleitung)
 - [ ] **Phase 4** – Push-Benachrichtigungen (VAPID, Vercel Cron, Zeitfenster)
 - [ ] **Phase 5** – Google Sheets Export (OAuth2)
 - [ ] **Phase 6** – Claude-Analyse (Anthropic API, Key serverseitig)

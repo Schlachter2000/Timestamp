@@ -830,6 +830,15 @@ a:focus-visible {
   color: var(--muted);
 }
 
+.install-steps {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 13.5px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .cat-list {
   display: flex;
   flex-direction: column;

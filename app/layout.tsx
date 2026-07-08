@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { TabBar } from "@/components/TabBar";
 import { AuthGate } from "@/components/AuthGate";
+import { PwaSetup } from "@/components/PwaSetup";
 import "./globals.css";
 
 const archivo = localFont({
@@ -23,6 +24,15 @@ const plexMono = localFont({
 export const metadata: Metadata = {
   title: "Timestamp",
   description: "Zeittracking im 15-Minuten-Takt",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "Timestamp",
+    statusBarStyle: "default",
+  },
+  icons: {
+    apple: "/icons/apple-touch-icon.png",
+  },
 };
 
 export const viewport: Viewport = {
@@ -45,6 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: themeInit }} />
       </head>
       <body>
+        <PwaSetup />
         <TabBar />
         <main className="app-main">
           <AuthGate>{children}</AuthGate>
