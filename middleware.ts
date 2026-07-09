@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const SESSION_COOKIE = "timestamp_session";
+const SESSION_COOKIE = "bilanz_session";
 
 // Schneller Redirect anhand der Cookie-Präsenz; die eigentliche Prüfung der
 // Signatur passiert in den API-Routen. Ein ungültiges Cookie führt dort zu
@@ -20,5 +20,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/verlauf", "/auswertung", "/einstellungen", "/login"],
+  matcher: ["/", "/training", "/fortschritt", "/coach", "/einstellungen", "/login"],
 };
