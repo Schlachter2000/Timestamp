@@ -1,7 +1,7 @@
 {
-  "name": "Timestamp",
-  "short_name": "Timestamp",
-  "description": "Zeittracking im 15-Minuten-Takt",
+  "name": "Bilanz",
+  "short_name": "Bilanz",
+  "description": "Ernährung, Training und Gewicht – mit adaptivem TDEE und Coach",
   "id": "/",
   "start_url": "/",
   "scope": "/",
