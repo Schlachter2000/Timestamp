@@ -1,7 +1,7 @@
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 
-export const SESSION_COOKIE = "timestamp_session";
+export const SESSION_COOKIE = "bilanz_session";
 const SESSION_TTL_S = 60 * 60 * 24 * 365; // 1 Jahr – persönliche App, lange Session
 
 function secret(): string {

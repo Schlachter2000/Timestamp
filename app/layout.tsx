@@ -22,12 +22,12 @@ const plexMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Timestamp",
-  description: "Zeittracking im 15-Minuten-Takt",
+  title: "Bilanz",
+  description: "Ernährung, Training und Gewicht – mit adaptivem TDEE und Coach",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    title: "Timestamp",
+    title: "Bilanz",
     statusBarStyle: "default",
   },
   icons: {
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#f7f6f1" },
-    { media: "(prefers-color-scheme: dark)", color: "#16171a" },
+    { media: "(prefers-color-scheme: dark)", color: "#151714" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -46,7 +46,7 @@ export const viewport: Viewport = {
 };
 
 // Setzt das gespeicherte Theme vor dem ersten Paint, um Flackern zu vermeiden.
-const themeInit = `try{var t=localStorage.getItem("timestamp.theme");if(t==="dark"||t==="light")document.documentElement.dataset.theme=t}catch(e){}`;
+const themeInit = `try{var t=localStorage.getItem("bilanz.theme");if(t==="dark"||t==="light")document.documentElement.dataset.theme=t}catch(e){}`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

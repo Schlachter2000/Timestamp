@@ -44,12 +44,12 @@ export default function LoginPage() {
   return (
     <div className="login-wrap">
       <form className="login-card" onSubmit={submit}>
-        <p className="login-kicker mono">TIMESTAMP</p>
+        <p className="login-kicker mono">BILANZ</p>
         <h1>{registering ? "Konto anlegen" : "Anmelden"}</h1>
         <p className="login-hint">
           {registering
-            ? "Erster Start: Lege dein Konto an – damit sind deine Slots auf allen Geräten synchron."
-            : "Melde dich an, um deine Slots auf allen Geräten zu sehen."}
+            ? "Erster Start: Lege dein Konto an – damit sind Ernährung, Training und Gewicht auf allen Geräten synchron."
+            : "Melde dich an, um deine Daten zu sehen."}
         </p>
         <label>
           E-Mail

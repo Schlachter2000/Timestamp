@@ -1,5 +1,5 @@
 {
-  "name": "timestamp",
+  "name": "bilanz",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,17 +10,18 @@
     "db:schema": "node --env-file=.env.local scripts/apply-schema.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.110.0",
     "@neondatabase/serverless": "^1.1.0",
+    "@zxing/browser": "^0.1.5",
+    "@zxing/library": "^0.21.3",
     "next": "^15.3.4",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "web-push": "^3.6.7"
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
-    "@types/web-push": "^3.6.4",
     "playwright": "^1.61.1",
     "typescript": "^5.8.0"
   }

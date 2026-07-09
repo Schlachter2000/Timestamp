@@ -1,71 +1,85 @@
-# Timestamp
+# Bilanz
 
-Installierbare PWA für Zeittracking im 15-Minuten-Takt: Tag in 96 Slots erfassen,
-Verlauf und Auswertung ansehen, alle 15 Minuten per Push erinnert werden.
+Installierbare PWA für Ernährungs-, Trainings- und Gewichts-Tracking mit
+sportwissenschaftlichem Kern und Claude als Coach. Läuft offline-first auf dem
+Handy (Barcode-Scan im Supermarkt, Logging im Gym ohne Netz) und synchronisiert
+im Hintergrund.
+
+## Was die App wissenschaftlich anders macht
+
+- **Adaptiver TDEE** – Der Kalorienverbrauch wird nicht dauerhaft aus einer
+  Formel geschätzt, sondern nach ~2 Wochen Protokoll aus Energiezufuhr und
+  Trendgewicht zurückgerechnet (Energiebilanzmethode, 7700 kcal/kg). Individuelle
+  Stoffwechselunterschiede und adaptive Thermogenese sind damit automatisch drin.
+- **Trendgewicht** – Exponentiell geglätteter Verlauf statt Tageswert; Wasser-
+  und Glykogenschwankungen verschwinden aus der Kurve und aus den Entscheidungen.
+- **Ehrliche Aktivitäts-Gutschrift** – Trainingsverbrauch wird netto ((MET − 1))
+  gerechnet und standardmäßig nur zu 50 % gutgeschrieben; Schritte zählen erst
+  oberhalb von 7.500/Tag. Das verhindert das klassische Doppelzählen, an dem die
+  meisten Tracking-Apps scheitern.
+- **Rekomposition als eigenes Ziel** – Kalorien um Erhaltung, Protein 2,2 g/kg,
+  Protein-Schwelle pro Mahlzeit (~0,4 g/kg) als anaboler Reiz.
+- **Qualitäts-Score (0–100)** – Protein, Ballaststoffe (14 g/1000 kcal) und
+  WHO-Grenzen für Zucker/gesättigte Fette, damit „Kalorien passen“ nicht das
+  einzige Signal ist.
+- **Coach mit Datenzugriff** – Claude bekommt bei jeder Frage die echte Bilanz
+  (offene Kalorien, Protein-Lücke, Trend, Trainingswoche, Lieblingsessen) und
+  schlägt darauf abgestimmte Gerichte vor.
 
 ## Tech-Stack
 
-- **Next.js (App Router) + TypeScript** – Frontend, API-Routes und Vercel-Cron in einem Framework
-- **Postgres** (Supabase oder Neon) – Cross-Device-Sync *(ab Phase 2)*
-- **Web Push** mit VAPID *(ab Phase 4)*, **Google Sheets Export** *(Phase 5)*, **Claude-Analyse** *(Phase 6)*
-- Design: „Werkbank“ – Papierweiß/Anthrazit, feine Linien, Monospace-Zeiten, Ultramarin-Akzent
+- **Next.js (App Router) + TypeScript** – Frontend und API-Routes
+- **Postgres (Neon)** – Quelle der Wahrheit, Sync über Geräte
+- **Offline-first Client** – Snapshot + Mutations-Outbox in IndexedDB,
+  idempotente Upserts mit Client-UUIDs
+- **@zxing/browser** – Barcode-Scan (EAN/UPC) direkt in der Kamera, iOS-tauglich
+- **Open Food Facts** – Produktdatenbank für Scan und Suche (Server-Proxy + Cache)
+- **Claude API** (`@anthropic-ai/sdk`) – Coach-Chat mit Streaming, Key bleibt serverseitig
+- Design: „Studio“ – Papierweiß/Tannengrün, feine Linien, Mono-Ziffern
 
 ## Lokal starten
 
 ```bash
 npm install
-cp .env.example .env.local   # DATABASE_URL (Neon) und AUTH_SECRET eintragen
+cp .env.example .env.local   # DATABASE_URL (Neon), AUTH_SECRET, ANTHROPIC_API_KEY
 npm run db:schema            # Schema in die Datenbank einspielen (einmalig)
 npm run dev
 ```
 
 Dann <http://localhost:3000> öffnen. Beim ersten Start legt man auf der
 Login-Seite das (einzige) Konto an; danach ist die Registrierung geschlossen.
-Produktions-Build prüfen:
+Produktions-Build prüfen: `npm run build && npm start`.
 
-```bash
-npm run build && npm start
-```
+**Aufs iPhone bringen:** Auf Vercel deployen (Env-Variablen setzen), die URL in
+Safari öffnen und über Teilen → „Zum Home-Bildschirm“ installieren. Kamera
+(Scanner) braucht HTTPS – lokal geht der Scan daher nur eingeschränkt.
 
 ## Projektstruktur
 
 | Pfad | Inhalt |
 | --- | --- |
-| `app/` | Seiten: Heute (Tagesraster), Verlauf (Woche/Monat), Auswertung, Einstellungen |
-| `components/` | `DayTimeline` (96-Slot-Timeline), `EntrySheet` (Schnelleingabe), `TabBar` |
-| `lib/` | Slot-/Datums-Arithmetik, Datenschicht (`store.ts`), Typen |
-| `db/schema.sql` | Postgres-Schema für alle Phasen (Nutzer, Kategorien, Einträge, Push, Settings) |
-| `public/fonts/` | Archivo + IBM Plex Mono, lokal eingebunden (kein Google-Fonts-Request) |
-
-## Phasenstand
-
-- [x] **Phase 1** – Grundgerüst, DB-Schema, Tracking-UI (Daten lokal im Browser)
-- [x] **Phase 2** – Auth (E-Mail + Passwort) + Cross-Device-Sync über Neon-Postgres
-- [x] **Phase 3** – PWA (Manifest, Service Worker, Installierbarkeit, iOS-Anleitung)
-- [x] **Phase 4** – Push-Benachrichtigungen (VAPID, 15-Minuten-Scheduler, Zeitfenster)
-- [ ] **Phase 5** – Google Sheets Export (OAuth2)
-- [ ] **Phase 6** – Claude-Analyse (Anthropic API, Key serverseitig)
+| `app/` | Seiten: Heute, Training, Coach, Fortschritt, Einstellungen, Login |
+| `app/api/` | Auth, Daten-Sync, Tagebuch/Foods/Gewicht/Training, Barcode & Suche (OFF-Proxy), Coach (Claude) |
+| `components/` | Kalorienring, Makro-Balken, Barcode-Scanner, Sheets, Gewichts-Chart |
+| `lib/science.ts` | TDEE (Formel + adaptiv), Trendgewicht, Ziele, MET-Katalog, Qualitäts-Score |
+| `lib/store.ts` | Offline-first Store (IndexedDB-Snapshot + Outbox) |
+| `db/schema.sql` | Postgres-Schema (Profil, Foods, Tagebuch, Gewicht, Training, Schritte, Chat) |
 
 ## Architektur-Notizen
 
-- **Datenfluss:** Der Server ist die Quelle der Wahrheit. `lib/store.ts` hält
-  eine reaktive Kopie, wendet Mutationen optimistisch an und schreibt sie an
-  die API-Routes; Refetch bei Fokus/Sichtbarkeit und alle 60 s hält mehrere
-  Geräte synchron. Ein evtl. vorhandener Phase-1-Stand aus `localStorage`
-  wird beim ersten Login einmalig importiert.
-- **Auth:** scrypt-Passwort-Hash (node:crypto), zustandslose HMAC-signierte
-  Session im httpOnly-Cookie. Die Registrierung ist offen, bis das erste
-  Konto existiert, danach geschlossen (Single-User-App).
-- **Umgebungsvariablen** (lokal in `.env.local`, in Vercel unter *Settings →
-  Environment Variables*, Namen siehe `.env.example`): `DATABASE_URL`,
-  `AUTH_SECRET`, `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`,
-  `VAPID_SUBJECT`, `CRON_SECRET`.
-- **Push-Scheduler:** `GET /api/cron/push` (geschützt durch `CRON_SECRET` als
-  `Authorization: Bearer …` oder `?key=…`) schickt an alle Konten mit aktivem
-  Push, deren lokales Zeitfenster offen ist. Alle 15 Minuten aufrufen:
-  auf Vercel **Pro** per Vercel Cron (`vercel.json`:
-  `{"crons":[{"path":"/api/cron/push","schedule":"*/15 * * * *"}]}` – Vercel
-  sendet den `CRON_SECRET`-Header automatisch), auf dem **Hobby-Plan** (Cron
-  dort max. 1×/Tag) per externem Dienst wie cron-job.org.
-- **iOS:** Web Push erst ab iOS 16.4 und nur in der über „Zum Home-Bildschirm“
-  installierten App – die Einstellungen zeigen die passende Anleitung an.
+- **Offline-first:** Der Store lädt beim Start den letzten Snapshot aus
+  IndexedDB und ist sofort benutzbar. Mutationen werden optimistisch angewendet
+  und in einer persistenten Outbox gesammelt; online werden sie idempotent
+  (Client-UUIDs + Upserts) abgespielt, danach gleicht ein Refetch ab.
+- **Nährwerte denormalisiert:** Tagebucheinträge speichern ihre Nährwerte als
+  Kopie – spätere Produkt-Edits verfälschen die Historie nicht.
+- **Barcode:** Kamera-Scan (EAN-13/8, UPC) → eigener Food-Cache → Open Food
+  Facts. Nicht gefundene Produkte landen vorausgefüllt in der manuellen Eingabe.
+- **Coach:** `/api/coach` streamt Claude-Antworten (Opus 4.8, adaptives Denken).
+  Der Server baut pro Anfrage einen Kontextblock aus Profil, Zielen, offener
+  Tagesbilanz, 7-Tage-Mitteln, Trainingswoche und häufigen Lebensmitteln;
+  der Chatverlauf liegt in Postgres.
+- **Umgebungsvariablen** (lokal `.env.local`, in Vercel unter *Settings →
+  Environment Variables*): `DATABASE_URL`, `AUTH_SECRET`, `ANTHROPIC_API_KEY`.
+- **Icons neu bauen:** `node scripts/make-icons.mjs` (rendert `app/icon.svg`
+  über Playwright in die PNG-Größen).

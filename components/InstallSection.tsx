@@ -22,10 +22,9 @@ function detectPlatform(): Platform {
 }
 
 /**
- * In-App-Hinweis zur Installation. Auf iOS läuft Web Push (ab 16.4) nur,
- * wenn die App über "Zum Home-Bildschirm" installiert wurde – daher die
- * Schritt-für-Schritt-Anleitung. Android/Desktop bekommen den nativen
- * Install-Prompt, wenn der Browser ihn anbietet.
+ * In-App-Hinweis zur Installation. Auf dem iPhone bekommt Bilanz erst über
+ * "Zum Home-Bildschirm" ein eigenes Icon, Vollbild und stabilen Kamerazugriff
+ * für den Barcode-Scanner. Android/Desktop nutzen den nativen Install-Prompt.
  */
 export function InstallSection() {
   const [platform, setPlatform] = useState<Platform | null>(null);
@@ -43,7 +42,7 @@ export function InstallSection() {
     return (
       <section className="settings-section">
         <h2>App installieren</h2>
-        <p className="hint">✓ Timestamp läuft bereits als installierte App.</p>
+        <p className="hint">✓ Bilanz läuft bereits als installierte App.</p>
       </section>
     );
   }
@@ -54,19 +53,18 @@ export function InstallSection() {
       {platform === "ios" ? (
         <>
           <p className="hint">
-            Auf dem iPhone/iPad muss Timestamp zum Home-Bildschirm hinzugefügt werden – nur dann
-            funktionieren später auch die Push-Erinnerungen (ab iOS 16.4):
+            Auf dem iPhone wird Bilanz über den Home-Bildschirm zur vollwertigen App:
           </p>
           <ol className="install-steps">
             <li>Diese Seite in <strong>Safari</strong> öffnen (nicht in einem In-App-Browser).</li>
             <li>Unten das <strong>Teilen-Symbol</strong> antippen (Quadrat mit Pfeil nach oben).</li>
             <li>In der Liste <strong>„Zum Home-Bildschirm“</strong> wählen.</li>
-            <li>Mit <strong>„Hinzufügen“</strong> bestätigen und Timestamp vom Home-Bildschirm starten.</li>
+            <li>Mit <strong>„Hinzufügen“</strong> bestätigen und Bilanz vom Home-Bildschirm starten.</li>
           </ol>
         </>
       ) : platform === "installable" ? (
         <>
-          <p className="hint">Installiere Timestamp als App – eigenes Fenster, Icon im Launcher.</p>
+          <p className="hint">Installiere Bilanz als App – eigenes Fenster, Icon im Launcher.</p>
           <button
             className="btn primary"
             style={{ flex: "none" }}
@@ -78,7 +76,7 @@ export function InstallSection() {
       ) : (
         <p className="hint">
           In Chrome oder Edge findest du die Installation im Browser-Menü unter{" "}
-          <strong>„Timestamp installieren“</strong> (bzw. „Apps“). Auf dem iPhone: In Safari über
+          <strong>„Bilanz installieren“</strong> (bzw. „Apps“). Auf dem iPhone: In Safari über
           Teilen → „Zum Home-Bildschirm“.
         </p>
       )}

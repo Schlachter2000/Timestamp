@@ -1,8 +1,9 @@
-// Timestamp Service Worker
-// Strategie: API nie cachen (Datenbank ist Quelle der Wahrheit), Navigationen
-// network-first mit Offline-Fallback, statische gehashte Assets cache-first.
-const VERSION = "v2";
-const CACHE = `timestamp-${VERSION}`;
+// Bilanz Service Worker
+// Strategie: API nie cachen (der Client-Store hat seinen eigenen Offline-
+// Snapshot in IndexedDB), Navigationen network-first mit Offline-Fallback,
+// statische gehashte Assets cache-first.
+const VERSION = "v1";
+const CACHE = `bilanz-${VERSION}`;
 const OFFLINE_URL = "/offline.html";
 const PRECACHE = [
   OFFLINE_URL,
@@ -26,75 +27,42 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-// --- Web Push (Phase 4) ---------------------------------------------------
-
-self.addEventListener("push", (event) => {
-  let data = {};
-  try {
-    data = event.data ? event.data.json() : {};
-  } catch {
-    // Payload nicht lesbar – Standardtext zeigen
-  }
-  event.waitUntil(
-    self.registration.showNotification(data.title || "Timestamp", {
-      body: data.body || "Was machst du gerade?",
-      tag: "timestamp-slot", // neue Erinnerung ersetzt die alte
-      icon: "/icons/icon-192.png",
-      badge: "/icons/icon-192.png",
-      data: { url: "/" },
-    })
-  );
-});
-
-self.addEventListener("notificationclick", (event) => {
-  event.notification.close();
-  event.waitUntil(
-    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((windows) => {
-      for (const client of windows) {
-        if ("focus" in client) return client.focus();
-      }
-      return self.clients.openWindow(event.notification.data?.url || "/");
-    })
-  );
-});
-
 self.addEventListener("fetch", (event) => {
-  const request = event.request;
+  const { request } = event;
   if (request.method !== "GET") return;
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
-  if (url.pathname.startsWith("/api/")) return; // immer Netzwerk, nie Cache
+  if (url.pathname.startsWith("/api/")) return; // Daten kommen aus dem Store
 
-  // Seiten-Navigationen: network-first, offline Fallback-Seite
+  // Navigationen: network-first, damit Deployments sofort ankommen.
   if (request.mode === "navigate") {
     event.respondWith(
-      fetch(request).catch(() => caches.match(OFFLINE_URL))
+      fetch(request)
+        .then((response) => {
+          const copy = response.clone();
+          caches.open(CACHE).then((cache) => cache.put(request, copy));
+          return response;
+        })
+        .catch(() =>
+          caches.match(request).then((cached) => cached ?? caches.match(OFFLINE_URL))
+        )
     );
     return;
   }
 
-  // Gehashte Build-Assets und statische Dateien: cache-first
-  const isStatic =
-    url.pathname.startsWith("/_next/static/") ||
-    url.pathname.startsWith("/icons/") ||
-    url.pathname.endsWith(".woff2") ||
-    url.pathname === "/manifest.webmanifest" ||
-    url.pathname === "/icon.svg";
-
-  if (isStatic) {
-    event.respondWith(
-      caches.match(request).then(
-        (cached) =>
-          cached ??
-          fetch(request).then((response) => {
-            if (response.ok) {
-              const copy = response.clone();
-              caches.open(CACHE).then((cache) => cache.put(request, copy));
-            }
-            return response;
-          })
-      )
-    );
-  }
+  // Statische Assets (Next-Bundles sind gehasht): cache-first.
+  event.respondWith(
+    caches.match(request).then(
+      (cached) =>
+        cached ??
+        fetch(request).then((response) => {
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE).then((cache) => cache.put(request, copy));
+          }
+          return response;
+        })
+    )
+  );
 });
